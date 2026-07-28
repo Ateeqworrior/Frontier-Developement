@@ -1,0 +1,198 @@
+openapi: 3.1.0
+info:
+  title: MartSarathi Auth Service — US-001 contribution
+  version: "1.0"
+  description: >
+    New/modified endpoints introduced by US-001 (SSO Registration, Login & UDID Verification).
+    Full Auth Service API surface: see docs/design/services/auth-service/api-endpoints.md.
+servers:
+  - url: http://localhost:8001/api/auth
+paths:
+  /cars/callback:
+    get:
+      summary: CARS OIDC callback — exchange authorization code for internal JWT
+      operationId: carsOidcCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Login successful — internal JWT issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardResponseLoginData"
+        "401":
+          description: CARS code exchange or ID token validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+        "403":
+          description: Account is blocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /verify-udid:
+    post:
+      summary: Verify a logged-in Buyer's UDID against the Sarthak Foundation endpoint
+      operationId: verifyUdid
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyUdidRequest"
+      responses:
+        "200":
+          description: UDID verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyUdidResponse"
+        "422":
+          description: UDID did not match a Sarthak Foundation record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+        "502":
+          description: Sarthak Foundation endpoint unreachable or timed out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /login:
+    post:
+      summary: Login via principal exchange (existing endpoint — 403 account_blocked behavior added by this story)
+      operationId: loginExchangePrincipal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardResponseLoginData"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+        "403":
+          description: Account blocked (new — set by Super Admin, see US-014)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequest:
+      type: object
+      required: [principal]
+      properties:
+        principal:
+          type: object
+          required: [email, password, isEnabled]
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+            isEnabled:
+              type: boolean
+    VerifyUdidRequest:
+      type: object
+      required: [udid_number]
+      properties:
+        udid_number:
+          type: string
+          maxLength: 100
+    VerifyUdidResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                udid_verified:
+                  type: boolean
+                udid_verified_at:
+                  type: string
+                  format: date-time
+    StandardResponseEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+          format: uuid
+        api_version:
+          type: string
+        response_format_version:
+          type: string
+        message:
+          type: string
+        message_code:
+          type: string
+    StandardResponseLoginData:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                token_type:
+                  type: string
+                  example: bearer
+                token_expiry:
+                  type: string
+                  format: date-time
+                user_id:
+                  type: integer
+                role:
+                  type: string
+    StandardErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            error:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: account_blocked
+                detail:
+                  type: string

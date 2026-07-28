@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="us001-c4l2" name="US-001 C4 L2 Containers">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="client" value="Client" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="browser" value="React 19 SPA&#10;(registration/login screens)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="60" y="75" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="platform" value="MartSarathi Platform" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="40" width="560" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="authsvc" value="Auth Service&#10;FastAPI :8001&#10;sarthak_auth_service DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="430" y="80" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="othersvc" value="Cart / Order / Payment /&#10;Vendor / ... services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="700" y="80" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="outbox" value="Outbox Worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="560" y="175" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="external" value="External Systems" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1040" y="40" width="300" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="cars" value="Sarthak CARS&#10;(OIDC Identity Provider)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00" vertex="1" parent="1">
+          <mxGeometry x="1070" y="80" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sarthak" value="Sarthak Foundation&#10;UDID Verification API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00" vertex="1" parent="1">
+          <mxGeometry x="1070" y="160" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="1. Register/Login redirect" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="cars">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="2. Redirect back with principal" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="cars" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="3. POST /api/auth/login" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="authsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="4. Mint internal JWT (HS256)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="authsvc" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="5. Bearer JWT on API calls" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="othersvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="6. POST /api/auth/verify-udid" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="authsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="7. Verify UDID" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="authsvc" target="sarthak">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="8. USER_CREATED / USER_UPDATED" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="authsvc" target="outbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="publish" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="outbox" target="othersvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

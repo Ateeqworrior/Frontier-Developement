@@ -1,0 +1,67 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="us004-c4l2" name="US-004 C4 L2 Containers">
+    <mxGraphModel dx="1300" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="client" value="Client" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="260" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="browser" value="React 19 SPA&#10;(cart drawer/page,&#10;wishlist page,&#10;PIN feasibility widget)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="platform" value="MartSarathi Platform" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="380" y="40" width="850" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="cartsvc" value="Cart Service&#10;FastAPI :8003&#10;sarthak_cart_service DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="410" y="80" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="catalogsvc" value="Catalog Service&#10;(wishlist API, existing +&#10;new batch-price endpoint)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="670" y="80" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="logisticssvc" value="Logistics Integration&#10;(US-013)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="950" y="80" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="authsvc" value="Auth Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="410" y="240" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="outbox" value="Outbox Worker / SNS-SQS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="630" y="240" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="1. GET /api/cart (items + totals)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="cartsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="2. POST/PUT/DELETE /api/cart/items/{id}" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="cartsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="3. GET /api/cart/delivery-feasibility?pin_code=" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="cartsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="4. GET /logistics/feasibility?pin= (reused, 10s timeout)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="cartsvc" target="logisticssvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="5. GET /api/catalog/products/prices?ids= (NEW)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="cartsvc" target="catalogsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="6. Wishlist CRUD /api/v1/wishlist/* (existing)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="catalogsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="7. POST /api/cart/wishlist/{id}/move-to-cart (NEW)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="browser" target="cartsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="8. GET + DELETE /api/v1/wishlist/{id}" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="cartsvc" target="catalogsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="USER_CREATED / USER_UPDATED" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="authsvc" target="outbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="consume: sync user_local (existing)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="outbox" target="cartsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

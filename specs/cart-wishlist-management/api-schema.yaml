@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: MartSarathi Cart Service — US-004 contribution
+  version: "1.0"
+  description: >
+    New/changed endpoints introduced by US-004 (Cart & Wishlist Management).
+    Full Cart Service API surface: see docs/design/services/cart-service/api-endpoints.md.
+    Also includes the new Catalog Service batch-price endpoint this story depends on.
+servers:
+  - url: http://localhost:8003/api/cart
+    description: Cart Service
+  - url: http://localhost:8002/api/catalog
+    description: Catalog Service (batch-price dependency only)
+paths:
+  /:
+    get:
+      summary: List cart items (active + saved-for-later) with computed totals
+      operationId: getCart
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Cart contents and totals (totals/price may be null in degraded mode)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+  /delivery-feasibility:
+    get:
+      summary: Check delivery feasibility for a PIN code
+      operationId: getDeliveryFeasibility
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pin_code
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 10
+      responses:
+        "200":
+          description: Feasibility result (may be "unknown" in degraded mode)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeasibilityResponse"
+        "422":
+          description: Missing or malformed pin_code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /wishlist/{wishlist_id}/move-to-cart:
+    post:
+      summary: Move a wishlist item into the cart (removes it from the wishlist)
+      operationId: moveWishlistItemToCart
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: wishlist_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Item moved to cart; wishlist_removed indicates whether the wishlist delete also succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoveToCartResponse"
+        "404":
+          description: Wishlist item not found or belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    StandardResponseEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+          format: uuid
+        api_version:
+          type: string
+        response_format_version:
+          type: string
+        message:
+          type: string
+        message_code:
+          type: string
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        quantity:
+          type: integer
+        is_saved_for_later:
+          type: boolean
+        title:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: decimal
+          nullable: true
+    CartTotals:
+      type: object
+      nullable: true
+      properties:
+        subtotal:
+          type: number
+          format: decimal
+        tax:
+          type: number
+          format: decimal
+        delivery_charge:
+          type: number
+          format: decimal
+        grand_total:
+          type: number
+          format: decimal
+    CartResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/CartItem"
+                totals:
+                  $ref: "#/components/schemas/CartTotals"
+    FeasibilityResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                pin_code:
+                  type: string
+                feasibility:
+                  type: string
+                  enum: [feasible, not_feasible, unknown]
+    MoveToCartResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                cart_item:
+                  $ref: "#/components/schemas/CartItem"
+                wishlist_removed:
+                  type: boolean
+    StandardErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            error:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: wishlist_item_not_found
+                detail:
+                  type: string
+  x-catalog-service-dependency:
+    description: >
+      New endpoint required from Catalog Service to support this story's cart-total
+      enrichment. Owned and implemented by the Catalog Service team, tracked here
+      as a required upstream contract (same pattern as US-003's Logistics dependency).
+    path: /products/prices
+    method: get
+    parameters:
+      - name: ids
+        in: query
+        required: true
+        schema:
+          type: string
+          description: Comma-separated product IDs
+    response_schema:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              title:
+                type: string
+              image_url:
+                type: string
+              price:
+                type: number
+                format: decimal

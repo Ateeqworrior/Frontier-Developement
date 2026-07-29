@@ -70,6 +70,7 @@ export default function ProductListingPage() {
           placeholder="Min rating"
           min="0"
           max="5"
+          step="0.1"
           value={filters.min_rating}
           onChange={handleFilterChange("min_rating")}
         />

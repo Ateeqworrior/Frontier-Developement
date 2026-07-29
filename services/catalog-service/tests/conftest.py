@@ -1,19 +1,39 @@
 import json
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "libs" / "ecom-core" / "src"))
 
+import jwt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from ecom_core.auth_common.config import auth_common_settings
+
 from app import database as database_module
 from app.database import Base
 from app.models import Category, Product, ProductVariant
 from main import app
+
+
+@pytest.fixture()
+def auth_token():
+    """A validly-signed JWT for the "Optional Bearer" endpoints — mirrors the claim
+    shape `ecom_core.auth_common.dependencies.get_current_user` expects."""
+    now = int(time.time())
+    claims = {
+        "sub": "1",
+        "email": "buyer@example.com",
+        "role": "user",
+        "iat": now,
+        "exp": now + 3600,
+        "iss": auth_common_settings.jwt_issuer,
+    }
+    return jwt.encode(claims, auth_common_settings.secret_key, algorithm=auth_common_settings.jwt_algorithm)
 
 
 @pytest.fixture()

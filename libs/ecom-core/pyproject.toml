@@ -1,0 +1,20 @@
+[project]
+name = "ecom-core"
+version = "0.1.0"
+description = "Shared cross-cutting library for MartSarathi microservices (auth, RBAC, standard response, outbox, HTTP client)."
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "pyjwt>=2.8",
+    "httpx>=0.27",
+    "fastapi>=0.110",
+    "sqlalchemy>=2.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

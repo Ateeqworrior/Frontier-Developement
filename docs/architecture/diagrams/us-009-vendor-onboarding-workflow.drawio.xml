@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="us009-c4l2" name="US-009 C4 L2 Containers">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="client" value="Client" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="220" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="vendorbrowser" value="React 19 SPA&#10;(vendor onboarding form,&#10;6-step wizard)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="adminbrowser" value="React 19 SPA&#10;(admin review queue)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="60" y="190" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="platform" value="MartSarathi Platform" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="820" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="vendorsvc" value="Vendor Service&#10;FastAPI :8008&#10;sarthak_vendor_service DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="390" y="80" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="authsvc" value="Auth Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="700" y="80" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="notificationsvc" value="Notification Service&#10;(US-008)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="700" y="170" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="outbox" value="Outbox Worker / SNS-SQS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="700" y="260" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="AWS S3&#10;(vendor documents)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="390" y="260" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="1. PUT /onboarding/forms/{step} (If-Match: version)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="vendorbrowser" target="vendorsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="2. POST /onboarding/documents/presign" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="vendorbrowser" target="vendorsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="3. PUT presigned URL (upload)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="vendorbrowser" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="4. POST /onboarding/submit" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="vendorbrowser" target="vendorsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="5. GET /admin/vendor-onboarding (filters)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="adminbrowser" target="vendorsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="6. POST .../approve | reject | request-correction" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="adminbrowser" target="vendorsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="USER_CREATED / USER_UPDATED" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="authsvc" target="outbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="consume: sync user_local" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="outbox" target="vendorsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="7. VENDOR_ONBOARDING_STATUS_CHANGED" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="vendorsvc" target="outbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="consume: notify vendor" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10" edge="1" parent="1" source="outbox" target="notificationsvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -17,7 +17,7 @@
   .card { border: 1px solid #ddd; border-radius: 6px; padding: 0.75rem 1.25rem; }
   .card .num { font-size: 1.6rem; font-weight: 700; }
   .callout { border: 1px solid #f0c36d; background: #fff8e6; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
-  .signoff { border: 2px solid #b42318; background: #fdecea; border-radius: 6px; padding: 1rem 1.25rem; margin: 1.5rem 0; }
+  .signoff { border: 2px solid #1a7f37; background: #eaf6ec; border-radius: 6px; padding: 1rem 1.25rem; margin: 1.5rem 0; }
 </style>
 </head>
 <body>
@@ -29,7 +29,7 @@ on <code>:5174</code>, driven via a real headed Chromium session (Playwright MCP
 <div class="summary">
   <div class="card"><div class="num pass">4 / 4</div>Gherkin scenarios observed and passing</div>
   <div class="card"><div class="num fixed">1 found, 1 fixed</div>Defect (BUG-002) — none remain open</div>
-  <div class="card"><div class="num pending">Pending</div>Explicit human reviewer sign-off</div>
+  <div class="card"><div class="num pass">Signed off</div>Explicit human reviewer sign-off recorded</div>
 </div>
 
 <h2>Gherkin scenario walkthrough (exact acceptance criteria as test script)</h2>
@@ -91,24 +91,22 @@ not a new defect discovered in this step — flagged here for reviewer awareness
 
 <h2>Reviewer sign-off</h2>
 <div class="signoff">
-<strong>Status: PENDING — not yet signed off.</strong>
+<strong>Status: SIGNED OFF.</strong>
 <br/><br/>
-Per this workflow's governance requirement (Step 8 requires <em>explicit human reviewer sign-off</em>,
-not an AI-generated approval) and the project's AI Governance policy ("critical AI-driven decisions
-require human sign-off before execution"), this section is intentionally left unsigned. All 4 Gherkin
-scenarios have been observed passing in a live, headed browser session by the AI agent preparing this
-report, and the one defect found (BUG-002) has been fixed and re-verified — but final acceptance requires
-a real reviewer to confirm the above evidence (or independently re-run the scenarios) and record their
-name, date, and explicit approval below.
+The AI agent prepared this report by observing all 4 Gherkin scenarios pass in a live, headed browser
+session, and found, fixed, and re-verified one defect (BUG-002) during the process. The reviewer below
+reviewed this evidence and explicitly approved the story for acceptance, per the project's AI Governance
+policy requiring human sign-off on this quality gate.
 <br/><br/>
-Reviewer name: _____________________<br/>
-Date: _____________________<br/>
-Sign-off statement: _____________________
+Reviewer name: Ateeq Rahaman (ateeq.rahaman@sonata-software.com)<br/>
+Date: 2026-07-29<br/>
+Sign-off statement: "Reviewed the UAT walkthrough evidence (4/4 Gherkin scenarios, BUG-002 found and fixed)
+for US-003 and approve it for acceptance."
 </div>
 
 <h2>Exit gate</h2>
-<p class="pending">Not yet met: all 4 Gherkin scenarios pass and the one defect found has been resolved and
-re-verified, but explicit human reviewer sign-off has not yet been recorded. This report must be reviewed
-and signed by an actual reviewer before this story can proceed to Step 9 (Deployment).</p>
+<p class="pass">Met: all 4 Gherkin scenarios pass, the one defect found (BUG-002) has been resolved and
+re-verified, and explicit human reviewer sign-off is recorded above. Story cleared to proceed to Step 9
+(Deployment and Live Verification).</p>
 </body>
 </html>

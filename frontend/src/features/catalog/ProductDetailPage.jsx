@@ -42,7 +42,16 @@ export default function ProductDetailPage() {
   return (
     <main className="catalog-shell product-detail">
       <h1>{product.title}</h1>
-      {product.images[0] && <img src={product.images[0]} alt={product.title} className="product-detail-image" />}
+      {product.images[0] && (
+        <img
+          src={product.images[0]}
+          alt={product.title}
+          className="product-detail-image"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      )}
       <p>{product.description}</p>
       <p>Stock available: {product.stock_quantity}</p>
 

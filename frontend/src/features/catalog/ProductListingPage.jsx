@@ -87,7 +87,15 @@ export default function ProductListingPage() {
       <div className="product-grid">
         {products.map((product) => (
           <Link to={`/products/${product.id}`} key={product.id} className="product-card">
-            {product.image_url && <img src={product.image_url} alt={product.title} />}
+            {product.image_url && (
+              <img
+                src={product.image_url}
+                alt={product.title}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            )}
             <h3>{product.title}</h3>
             <p className="product-price">₹{product.base_price.toFixed(2)}</p>
             {product.avg_rating != null && (

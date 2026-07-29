@@ -1,0 +1,165 @@
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  background: #f5f6f8;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-card label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.auth-card input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.role-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.role-option {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.role-option.selected {
+  border-color: #2b6cb0;
+  background: #ebf4ff;
+}
+
+.inline-error {
+  color: #c0392b;
+}
+
+.error-state-banner {
+  border: 1px solid #c0392b;
+  background: #fdecea;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #2b6cb0;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.session-banner {
+  padding: 1rem;
+  background: #ebf4ff;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.catalog-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.catalog-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.catalog-controls input,
+.catalog-controls select {
+  padding: 0.5rem;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  display: block;
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.product-price {
+  font-weight: bold;
+}
+
+.product-rating {
+  color: #b7791f;
+}
+
+.product-detail-image {
+  max-width: 320px;
+  border-radius: 8px;
+}
+
+.price-breakdown,
+.delivery-feasibility {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+}

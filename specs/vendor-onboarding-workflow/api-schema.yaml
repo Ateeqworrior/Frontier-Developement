@@ -1,0 +1,521 @@
+openapi: 3.1.0
+info:
+  title: MartSarathi Vendor Service — US-009 contribution
+  version: "1.0"
+  description: >
+    New endpoints introduced by US-009 (Vendor Onboarding, Submission & Admin Review).
+    First API surface for the Vendor Service — full detail:
+    docs/design/services/vendor-service/api-endpoints.md.
+servers:
+  - url: http://localhost:8008/api/vendor
+paths:
+  /onboarding/forms/{step}/meta:
+    get:
+      summary: Field definitions, validation rules, and file requirements for a step
+      operationId: getOnboardingFormMeta
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: step
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6
+      responses:
+        "200":
+          description: Form metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FormMetaResponse"
+  /onboarding/forms/{step}:
+    get:
+      summary: Get the vendor's current saved values for a step
+      operationId: getOnboardingForm
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: step
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6
+      responses:
+        "200":
+          description: Saved form data (empty object if not yet started)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingFormResponse"
+    put:
+      summary: Save/update a step (draft)
+      operationId: saveOnboardingForm
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: step
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6
+        - name: If-Match
+          in: header
+          required: true
+          description: The `version` last read from GET /onboarding/status
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingFormResponse"
+        "409":
+          description: Version conflict — form was updated elsewhere
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+        "422":
+          description: Field validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /onboarding/documents/presign:
+    post:
+      summary: Get a presigned S3 upload URL for a document field
+      operationId: presignOnboardingDocument
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [document_field]
+              properties:
+                document_field:
+                  type: string
+                  example: pan_proof_path
+      responses:
+        "200":
+          description: Presigned upload URL (1-hour expiry)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresignResponse"
+        "422":
+          description: Invalid document field for current step
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /onboarding/submit:
+    post:
+      summary: Submit onboarding for admin review
+      operationId: submitOnboarding
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Submitted — status transitions to Submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatusResponse"
+        "422":
+          description: Mandatory fields/documents missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /onboarding/status:
+    get:
+      summary: Vendor's current onboarding status, remarks, and history
+      operationId: getOnboardingStatus
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatusResponse"
+  /admin/vendor-onboarding:
+    get:
+      summary: Filterable admin review queue
+      operationId: listVendorOnboardingQueue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Draft, Submitted, Under Review, Approved, Rejected, Correction Required]
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        "200":
+          description: Paginated vendor onboarding queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VendorQueueResponse"
+  /admin/vendor-onboarding/{vendor_id}:
+    get:
+      summary: Full vendor profile, documents, and status history
+      operationId: getVendorOnboardingDetail
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vendor_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Vendor onboarding detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VendorOnboardingDetailResponse"
+        "404":
+          description: Vendor onboarding record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /admin/vendor-onboarding/{vendor_id}/approve:
+    post:
+      summary: Approve a submitted vendor
+      operationId: approveVendorOnboarding
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vendor_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatusResponse"
+        "409":
+          description: Version conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /admin/vendor-onboarding/{vendor_id}/reject:
+    post:
+      summary: Reject a submitted vendor (mandatory remarks)
+      operationId: rejectVendorOnboarding
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vendor_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [remarks]
+              properties:
+                remarks:
+                  type: string
+                  minLength: 1
+                version:
+                  type: integer
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatusResponse"
+        "422":
+          description: Missing remarks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+  /admin/vendor-onboarding/{vendor_id}/request-correction:
+    post:
+      summary: Request correction on specific fields/documents
+      operationId: requestVendorOnboardingCorrection
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vendor_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [comments]
+              properties:
+                comments:
+                  type: object
+                  additionalProperties:
+                    type: string
+                version:
+                  type: integer
+      responses:
+        "200":
+          description: Correction requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingStatusResponse"
+        "422":
+          description: Missing comments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardErrorResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    StandardResponseEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+          format: uuid
+        api_version:
+          type: string
+        response_format_version:
+          type: string
+        message:
+          type: string
+        message_code:
+          type: string
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            page_size:
+              type: integer
+            total:
+              type: integer
+    FormMetaResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                step:
+                  type: integer
+                fields:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      type:
+                        type: string
+                      required:
+                        type: boolean
+                      validation:
+                        type: object
+                        additionalProperties: true
+    OnboardingFormResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: true
+    PresignResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                upload_url:
+                  type: string
+                s3_key:
+                  type: string
+                expires_in:
+                  type: integer
+                  example: 3600
+    OnboardingStatusResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                vendor_id:
+                  type: integer
+                current_step:
+                  type: integer
+                is_completed:
+                  type: boolean
+                status:
+                  type: string
+                  enum: [Draft, Submitted, Under Review, Approved, Rejected, Correction Required]
+                admin_comment:
+                  type: string
+                  nullable: true
+                version:
+                  type: integer
+                history:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/OnboardingStatusHistoryEntry"
+    OnboardingStatusHistoryEntry:
+      type: object
+      properties:
+        from_status:
+          type: string
+          nullable: true
+        to_status:
+          type: string
+        action:
+          type: string
+        comment:
+          type: string
+          nullable: true
+        changed_by:
+          type: integer
+        changed_at:
+          type: string
+          format: date-time
+    VendorQueueResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  vendor_id:
+                    type: integer
+                  business_name:
+                    type: string
+                  status:
+                    type: string
+                  submitted_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  category:
+                    type: string
+    VendorOnboardingDetailResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                vendor_id:
+                  type: integer
+                status:
+                  $ref: "#/components/schemas/OnboardingStatusResponse"
+                forms:
+                  type: object
+                  additionalProperties: true
+                documents:
+                  type: object
+                  additionalProperties:
+                    type: string
+                    description: Presigned download URL
+    StandardErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/StandardResponseEnvelope"
+        - type: object
+          properties:
+            error:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: onboarding_version_conflict
+                detail:
+                  type: string
